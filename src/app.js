@@ -2,7 +2,7 @@ import express from "express";
 import { petsRouter } from "./routes/pets.router.js";
 import { usersRouter } from "./routes/users.router.js";
 import { usersHtmlRouter } from "./routes/users.html.router.js";
-import { testSocketRouter } from "./routes/test.socket.router.js";
+import { testSocketChatRouter } from "./routes/test.socket.chat.router.js";
 import { Server } from "socket.io";
 import handlebars from "express-handlebars";
 import path from "path";
@@ -15,24 +15,25 @@ const httpServer = app.listen(port, () => {
 });
 
 const socketServer = new Server(httpServer);
-
+let msgs = [];
+//BACK
 socketServer.on("connection", (socket) => {
-  console.log("se abrio un canal de soket" + socket.id);
-  setInterval(() => {
-    socket.emit("msg_back_to_front", {
-      msg: Date.now() + " hola desde el back al socket",
-    });
+  //BACK EMITE
+  /* socket.emit("msg_back_to_front", {
+    msg: Date.now() + " hola desde el back al socket",
+  }); */
+  //BACK RECIBE
+  socket.on("msg_front_to_back", (msg) => {
+    console.log(msg);
+    msgs.push(msg);
+    socketServer.emit("msg_back_to_front", msgs);
+  });
 
-    socket.broadcast.emit("msg_back_to_todos_menos_socket", {
+  /* socket.broadcast.emit("msg_back_to_todos_menos_socket", {
       msg: "hola desde el back a todos menos el socket",
     });
 
-    socketServer.emit("msg_back_todos", { msg: "hola desde el back a todos" });
-  }, 2000);
-
-  socket.on("msg_front_to_back", (data) => {
-    console.log(JSON.stringify(data));
-  });
+    socketServer.emit("msg_back_todos", { msg: "hola desde el back a todos" }); */
 });
 
 app.use(express.json());
@@ -53,7 +54,7 @@ app.use("/api/pets", petsRouter);
 app.use("/users", usersHtmlRouter);
 
 //Rutas: SOCKETS
-app.use("/test-socket", testSocketRouter);
+app.use("/test-chat", testSocketChatRouter);
 
 app.get("*", (req, res) => {
   return res.status(404).json({
