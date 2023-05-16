@@ -1,27 +1,50 @@
 //FRONT
 const socket = io();
+let nombreUsuario = "";
 
-//FRONT EMITE
-//paso 1 - Un front/Usuario envia un msg,
-
-//BACK ATAJA Y LUEGO EMITE
-//paso 2 -
-//el back lo ataja,
-//lo guarda en un array
-//y lo devuelve a todo
-
-//FRONT ATAJA
-//paso 3 - atajar el array de msgs en el front
-// y mostrarlo en pantalla
-
-//FRONT EMITE
-setInterval(() => {
-  socket.emit("msg_front_to_back", {
-    msg: "msg " + Date.now(),
+async function pedirNombre() {
+  const { value: nombre } = await Swal.fire({
+    title: "Enter your name",
+    input: "text",
+    inputLabel: "Your name",
+    inputValue: "",
+    showCancelButton: false,
+    inputValidator: (value) => {
+      if (!value) {
+        return "You need to write something!";
+      }
+    },
   });
-}, 3000);
+
+  nombreUsuario = nombre;
+}
+
+pedirNombre();
+
+//FRONT EMITE
+
+const chatBox = document.getElementById("chat-box");
+
+chatBox.addEventListener("keyup", ({ key }) => {
+  if (key == "Enter") {
+    socket.emit("msg_front_to_back", {
+      user: nombreUsuario,
+      msg: chatBox.value,
+    });
+    chatBox.value = "";
+  }
+});
 
 //FRONT RECIBE
 socket.on("msg_back_to_front", (msgs) => {
   console.log(msgs);
+  let msgsFormateados = "";
+  msgs.forEach((msg) => {
+    msgsFormateados += "<div style='border: 1px solid red;'>";
+    msgsFormateados += "<p>" + msg.user + "</p>";
+    msgsFormateados += "<p>" + msg.msg + "</p>";
+    msgsFormateados += "</div>";
+  });
+  const divMsgs = document.getElementById("div-msgs");
+  divMsgs.innerHTML = msgsFormateados;
 });

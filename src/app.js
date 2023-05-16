@@ -25,7 +25,7 @@ socketServer.on("connection", (socket) => {
   //BACK RECIBE
   socket.on("msg_front_to_back", (msg) => {
     console.log(msg);
-    msgs.push(msg);
+    msgs.unshift(msg);
     socketServer.emit("msg_back_to_front", msgs);
   });
 
