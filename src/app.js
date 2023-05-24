@@ -24,8 +24,18 @@ socketServer.on("connection", (socket) => {
   }); */
   //BACK RECIBE
   socket.on("msg_front_to_back", (msg) => {
-    console.log(msg);
-    msgs.unshift(msg);
+    msg = {
+      user: msg.user.replace(
+        /<script.*?>|<\/script>|<.*?on.*?=.*?>|<\/.*?>|<.*?>/gi,
+        ""
+      ),
+      msg: msg.msg.replace(
+        /<script.*?>|<\/script>|<.*?on.*?=.*?>|<\/.*?>|<.*?>/gi,
+        ""
+      ),
+    };
+
+    msgs.unshift({ msg });
     socketServer.emit("msg_back_to_front", msgs);
   });
 
